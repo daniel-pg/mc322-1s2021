@@ -1,5 +1,11 @@
 # MC322 - Programação Orientada a Objetos
 
+## Aluno
+Daniel Paulo Garcia
+
+## Curso
+Engenharia de Computação (34)
+
 ## Sobre a disciplina
 
 Ministrada pelo professor [André Santanchè](https://github.com/santanche) no 1º semestre de 2021, a disciplina trata de "conceitos e aplicações práticas de programação orientada a objetos". ~~Basicamente, é uma matéria sobre Java :P~~
