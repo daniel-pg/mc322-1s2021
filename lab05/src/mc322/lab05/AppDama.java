@@ -23,7 +23,7 @@ public class AppDama {
 
         // Exibe o estado inicial do Board.
         System.out.println("Tabuleiro inicial:");
-        GameUtils.printBoard(boardHistory[0]);
+        Board.printBoard(boardHistory[0]);
 
         // Executa os comandos até que não sobre nenhum.
         for (String command : commands) {
@@ -31,12 +31,12 @@ public class AppDama {
             System.out.println("Source: " + moveSrcToDest[0] + "\nTarget: " + moveSrcToDest[1]);
 
             // Converte o comando em índices de matriz e executa o comando.
-            int[] srcDecoded = GameUtils.decodeCoord(moveSrcToDest[0]);
-            int[] dstDecoded = GameUtils.decodeCoord(moveSrcToDest[1]);
+            int[] srcDecoded = Board.decodeCoord(moveSrcToDest[0]);
+            int[] dstDecoded = Board.decodeCoord(moveSrcToDest[1]);
             if (board.movePiece(srcDecoded, dstDecoded)) {
                 // Exibe o estado resultante do Board na tela e o armazena no histórico.
                 boardHistory[boardHistoryIndex++] = board.toString();
-                GameUtils.printBoard(boardHistory[boardHistoryIndex - 1]);
+                Board.printBoard(boardHistory[boardHistoryIndex - 1]);
             }
         }
 
