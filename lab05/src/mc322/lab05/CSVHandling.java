@@ -1,3 +1,5 @@
+package mc322.lab05;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -33,7 +35,7 @@ public class CSVHandling {
    }
 
    public void setDataExport(String dataExport) {
-      if(dataExport!= null)
+      if(dataExport != null)
          this.dataExport = dataExport;
    }
 
@@ -56,6 +58,7 @@ public class CSVHandling {
 				line = file.readLine();
 			}
 			file.close();
+
 		} catch (IOException erro) {
 			erro.printStackTrace();
 		}
@@ -64,11 +67,15 @@ public class CSVHandling {
 	private void writeCSV(){
 		try {
 			PrintWriter fileExport = new PrintWriter(new FileWriter(dataExport, true));
-			if (state != null)
-			   for (int s = 0; s < state.length; s++)
-			      fileExport.println(state[s]);
+
+			if (state != null) {
+				for (String line : state) {
+					fileExport.println(line);
+				}
+			}
 			fileExport.close();
-		}catch(IOException erro){
+
+		} catch(IOException erro) {
 			erro.printStackTrace();
 		}
 	}
