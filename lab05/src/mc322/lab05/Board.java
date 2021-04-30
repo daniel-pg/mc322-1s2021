@@ -2,49 +2,57 @@ package mc322.lab05;
 
 public class Board {
     private int playerTurn;
-    private Pawn[][] mtxPawn;
-    private Queen[][] mtxQueen;
-
-    final static int BOARD_SIZE = 8;
-    final static int PAWN_RANKS = 3;
+    private Piece[][] boardMatrix;
+    private final int boardSize;
+    private final int pawnRanks;
 
     Board() {
-        playerTurn = 1;                                          // Brancas: 1. Pretas: 2.
-        mtxPawn = new Pawn[BOARD_SIZE][BOARD_SIZE];
-        mtxQueen = new Queen[BOARD_SIZE][BOARD_SIZE];
+        this(8, 3);
+    }
 
-        int[] pos;
+    Board(int boardSize, int pawnRanks) {
+        this.boardSize = boardSize;
+        this.pawnRanks = pawnRanks;
+        boardMatrix = new Piece[this.boardSize][this.boardSize];
+        playerTurn = 1;     // Brancas: 1. Pretas: 2.
+
+        int[] pos; // Vetor usado pra passar a coordenada da peça como parâmetro
 
         // Peças do jogador 1 (brancas)
-        for (int row = BOARD_SIZE - PAWN_RANKS; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
+        for (int row = this.boardSize - this.pawnRanks; row < this.boardSize; row++) {
+            for (int col = 0; col < this.boardSize; col++) {
                 if ((row + col) % 2 == 1) {
                     pos = new int[]{row, col};
-                    mtxPawn[row][col] = new Pawn(1, pos, this);
+                    boardMatrix[row][col] = new Pawn(1, pos, this);
                 }
             }
         }
 
         // Peças do jogador 2 (pretas)
-        for (int row = 0; row < PAWN_RANKS; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
+        for (int row = 0; row < this.pawnRanks; row++) {
+            for (int col = 0; col < this.boardSize; col++) {
                 if ((row + col) % 2 == 1) {
                     pos = new int[]{row, col};
-                    mtxPawn[row][col] = new Pawn(2, pos, this);
+                    boardMatrix[row][col] = new Pawn(2, pos, this);
                 }
             }
         }
     }
 
+    /**
+     * Retorna uma representação do tabuleiro na forma de uma String, onde cada linha do tabuleiro é dividida por
+     * uma quebra de linha. As letras minúsculas são peças comuns, e as letras maiúsculas são damas. A cor da peça é
+     * indicada pelas letras 'P' (preta) ou 'B' (branca).
+     */
     public String toString() {
         StringBuilder serialization = new StringBuilder();
-        int[] pos;
 
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                pos = new int[]{row, col};
-                Piece piece = getPiece(pos);
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                Piece piece = getPiece(new int[]{row, col});
+
                 if (piece == null) {
+                    // Espaço vazio
                     serialization.append('-');
                 } else {
                     if (piece instanceof Pawn) {
@@ -61,59 +69,62 @@ public class Board {
         return serialization.toString();
     }
 
+    /**
+     * Acessa a peça do tabuleiro na posição especificada.
+     * @param pos Vetor de (linha,coluna) da posição da peça.
+     * @return O objeto da peça, ou null se não houver peça.
+     */
     public Piece getPiece(int[] pos) {
-        Piece pawn = this.mtxPawn[pos[0]][pos[1]];
-        Piece queen = this.mtxQueen[pos[0]][pos[1]];
-
-        if (pawn != null) {
-            return pawn;
-        } else {
-            return queen;
-        }
+        if (this.isOutOfBounds(pos))
+            return null;
+        else
+            return this.boardMatrix[pos[0]][pos[1]];
     }
 
-    public boolean movePiece(int[] src, int[] dst) {
+    private boolean isOutOfBounds(int[] pos) {
+        return (pos[0] < 0 || pos[0] >= this.boardSize || pos[1] < 0 || pos[1] >= this.boardSize);
+    }
+
+    private void setPiece(int[] pos, Piece piece) {
+        this.boardMatrix[pos[0]][pos[1]] = piece;
+    }
+
+    public int getBoardSize() {
+        return boardSize;
+    }
+
+    public boolean requestMove(int[] src, int[] dst) {
+        if (this.isOutOfBounds(src)) return false;
+        if (this.isOutOfBounds(dst)) return false;
+
         Piece piece = this.getPiece(src);
+        if (piece == null) return false;
 
-        // TODO: Checar limites do tabuleiro
+        int[][] path = piece.validateMove(dst);
 
-        if (piece == null) {
+        if (path == null) {
             return false;
-        }
-
-        boolean success = piece.isValidMove(dst);
-        if (success) {
-            if (piece instanceof Pawn) {
-                this.mtxPawn[src[0]][src[1]] = null;                    // Remove o peão da posição-fonte
-                if (isLastRow(piece.owner, dst[0])) {
-                    Queen newPiece = new Queen((Pawn) piece);
-                    this.mtxQueen[dst[0]][dst[1]] = newPiece;           // Se o peão for promovido, adiciona rainha na posição-destino
-                } else {
-                    this.mtxPawn[dst[0]][dst[1]] = (Pawn) piece;        // Se não for promovido, adiciona peão na posição-destino
-                }
-            } else if (piece instanceof Queen) {
-                this.mtxQueen[src[0]][src[1]] = null;                   // Remove a rainha da posição-fonte
-                this.mtxQueen[dst[0]][dst[1]] = (Queen) piece;          // Adiciona rainha na posição-destino
-            }
-        }
-
-        if (!piece.hasValidMove()) {
-            this.changePlayers();
-        }
-
-        return success;
-    }
-
-    static boolean isLastRow(int owner, int row) {
-        return owner == 1 && row == 0 || owner == 2 && row == BOARD_SIZE - 1;
-    }
-
-    public void changePlayers() {
-        if (this.playerTurn == 1) {
-            this.playerTurn = 2;
         } else {
-            this.playerTurn = 1;
+            executeMove(path);
+            return true;
         }
+    }
+
+    private void executeMove(int[][] path) {
+        Piece piece = this.getPiece(path[0]);
+
+        // Remove a peça da posição original
+        this.setPiece(path[0], null);
+
+        // Remove uma peça que porventura tenha sido comida
+        this.setPiece(path[path.length - 2], null);
+
+        // Coloca a peça na posição destino, a promovendo se for o caso
+        this.setPiece(path[path.length - 1], piece.isPromotable() ? piece : new Queen(piece));
+    }
+
+    private void changePlayerTurn() {
+        this.playerTurn = (this.playerTurn - 1) % 2 + 1; // next_turn = (turn - bias) % no_players + bias
     }
 
     public static int[] decodeCoord(String encodedCoord) {
@@ -130,12 +141,13 @@ public class Board {
         return "" + Character.toString('a' + coord[1]) + ('8' - coord[0]);
     }
 
-    public static void printBoard(String strBoard) {
+    public void printBoard() {
         // Imprime o tabuleiro na tela com a formatação adequada.
-        String[] linhas = strBoard.split("\\n");
-        for (int row = Board.BOARD_SIZE; row > 0; row--) {
+        String[] linhas = this.toString().split("\\n");
+
+        for (int row = this.boardSize; row > 0; row--) {
             System.out.print(row);
-            String linha = linhas[Board.BOARD_SIZE - row];
+            String linha = linhas[this.boardSize - row];
             for (int i = 0; i < linha.length(); i++) {
                 System.out.print(" " + linha.charAt(i));
             }
@@ -143,7 +155,7 @@ public class Board {
         }
 
         System.out.print(" ");
-        for (int i = 0; i < Board.BOARD_SIZE; i++) {
+        for (int i = 0; i < this.boardSize; i++) {
             System.out.print(" " + Character.toString('a' + i));
         }
         System.out.println("\n");

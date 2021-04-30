@@ -11,7 +11,7 @@ public abstract class Piece {
         this.board = board;
     }
 
-    public abstract boolean isValidMove(int[] dst);
+    public abstract int[][] validateMove(int[] dst);
 
-    public abstract boolean hasValidMove();
+    public abstract boolean isPromotable();
 }

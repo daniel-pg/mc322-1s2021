@@ -7,16 +7,20 @@ public class Queen extends Piece {
         super(owner, pos, board);
     }
 
-    Queen(Pawn pawn) {
+    Queen(Piece pawn) {
         this(pawn.owner, pawn.pos, pawn.board);
     }
 
-    public boolean isValidMove(int[] dst) {
+    public int[][] validateMove(int[] dst) {
         // Avalia se o local de destino está vago
-        if (this.board.getPiece(dst) != null) return false;
+        if (this.board.getPiece(dst) != null) {
+            return null;
+        }
 
         // Avalia se o movimento é diagonal
-        if (Math.abs(pos[0] - dst[0]) != Math.abs(pos[1] - dst[1])) return false;
+        if (Math.abs(pos[0] - dst[0]) != Math.abs(pos[1] - dst[1])) {
+            return null;
+        }
 
         // Variáveis para percorrer a diagonal-trajetória partindo do destino em direção à rainha
         int rowStep = (pos[0] > dst[0]) ? 1 : -1;
@@ -25,29 +29,47 @@ public class Queen extends Piece {
         int col = dst[1] + colStep;
         int[] position;
 
-        // Avalia se o destino é adjacente à rainha
-        if (this.pos[0] == row) return true;
+        // Avalia se o destino é adjacente à rainha. Se for, retorna o vetor trajetória
+        if (this.pos[0] == row) {
+            this.pos = dst;
+            return new int[][]{this.pos, dst};
+        }
 
+        // As seções abaixo são executadas caso o destino esteja a duas ou mais casas da rainha
         // Avalia se a penúltima casa da trajetória contém uma peça do jogador
         position = new int[]{row, col};
         Piece nextToLast = this.board.getPiece(position);
-        if (nextToLast != null && nextToLast.owner == this.owner) return false;
+        if (nextToLast != null && nextToLast.owner == this.owner) {
+            return null;
+        }
 
         // Avalia se as outras casas da trajetória contém alguma peça
         row += rowStep;
         col += colStep;
         while(row != this.pos[0]) {
             position = new int[]{row, col};
-            if (this.board.getPiece(position) != null) return false;
-            row += rowStep;
-            col += colStep;
+            if (this.board.getPiece(position) != null) {
+                return null;
+            } else {
+                row += rowStep;
+                col += colStep;
+            }
         }
 
-        return true;
+        // Produz o vetor com a trajetória da rainha
+        // Relembre que rowStep e colStep vão do destino à posição da rainha
+        int length = this.pos[0] - dst[0] + 1;
+        int[][] trajectory = new int[length][2];
+        for (int i = 0; i < length; i++) {
+            trajectory[i][0] = this.pos[0] - (i * rowStep);
+            trajectory[i][1] = this.pos[1] - (i * colStep);
+        }
+
+        this.pos = dst;
+        return trajectory;
     }
 
-    public boolean hasValidMove() {
-        int[] coordAtual = new int[2];
-        return true;
+    public boolean isPromotable() {
+        return false;
     }
 }
