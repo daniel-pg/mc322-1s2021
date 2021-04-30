@@ -8,7 +8,6 @@ public class Pawn extends Piece {
     }
 
     public int[][] validateMove(int[] dst) {
-        // Avalia se o destino é
         // Avalia se já existe uma peça no local de destino
         if (this.board.getPiece(dst) != null) {
             return null;

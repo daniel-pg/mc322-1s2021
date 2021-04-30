@@ -40,6 +40,48 @@ public class Board {
     }
 
     /**
+     * Requisita à peça na posição de origem que calcule um trajeto até o destino, e em caso de sucesso, executa o
+     * movimento e retorna 'true'. Caso contrário, não realiza nenhuma ação e retorna 'false'.
+     *
+     * @param src Vetor de coordenadas da posição de origem do lance.
+     * @param dst Vetor de coordenadas da posição de destino do lance.
+     * @return Indica se o movimento foi bem-sucedido.
+     */
+    public boolean requestMove(int[] src, int[] dst) {
+        if (this.isOutOfBounds(src) || this.isOutOfBounds(dst))
+            return false;
+
+        Piece piece = this.getPiece(src);
+        if (piece == null) return false;
+
+        int[][] path = piece.validateMove(dst);
+
+        if (path == null) {
+            return false;
+        } else {
+            executeMove(path);
+            return true;
+        }
+    }
+
+    /**
+     * Executa o movimento especificado no parâmetro, comendo as peças que forem necessárias no caminho.
+     * @param path Vetor de posições que devem ser percorridas pela peça.
+     */
+    private void executeMove(int[][] path) {
+        Piece piece = this.getPiece(path[0]);
+
+        // Remove a peça da posição original
+        this.setPiece(path[0], null);
+
+        // Remove uma peça que porventura tenha sido comida
+        this.setPiece(path[path.length - 2], null);
+
+        // Coloca a peça na posição destino, a promovendo se for o caso
+        this.setPiece(path[path.length - 1], piece.isPromotable() ? piece : new Queen(piece));
+    }
+
+    /**
      * Retorna uma representação do tabuleiro na forma de uma String, onde cada linha do tabuleiro é dividida por
      * uma quebra de linha. As letras minúsculas são peças comuns, e as letras maiúsculas são damas. A cor da peça é
      * indicada pelas letras 'P' (preta) ou 'B' (branca).
@@ -70,77 +112,8 @@ public class Board {
     }
 
     /**
-     * Acessa a peça do tabuleiro na posição especificada.
-     * @param pos Vetor de (linha,coluna) da posição da peça.
-     * @return O objeto da peça, ou null se não houver peça.
+     * Imprime na saída padrão o estado atual do tabuleiro em texto formatado.
      */
-    public Piece getPiece(int[] pos) {
-        if (this.isOutOfBounds(pos))
-            return null;
-        else
-            return this.boardMatrix[pos[0]][pos[1]];
-    }
-
-    private boolean isOutOfBounds(int[] pos) {
-        return (pos[0] < 0 || pos[0] >= this.boardSize || pos[1] < 0 || pos[1] >= this.boardSize);
-    }
-
-    private void setPiece(int[] pos, Piece piece) {
-        this.boardMatrix[pos[0]][pos[1]] = piece;
-    }
-
-    public int getBoardSize() {
-        return boardSize;
-    }
-
-    public boolean requestMove(int[] src, int[] dst) {
-        if (this.isOutOfBounds(src)) return false;
-        if (this.isOutOfBounds(dst)) return false;
-
-        Piece piece = this.getPiece(src);
-        if (piece == null) return false;
-
-        int[][] path = piece.validateMove(dst);
-
-        if (path == null) {
-            return false;
-        } else {
-            executeMove(path);
-            return true;
-        }
-    }
-
-    private void executeMove(int[][] path) {
-        Piece piece = this.getPiece(path[0]);
-
-        // Remove a peça da posição original
-        this.setPiece(path[0], null);
-
-        // Remove uma peça que porventura tenha sido comida
-        this.setPiece(path[path.length - 2], null);
-
-        // Coloca a peça na posição destino, a promovendo se for o caso
-        this.setPiece(path[path.length - 1], piece.isPromotable() ? piece : new Queen(piece));
-    }
-
-    private void changePlayerTurn() {
-        this.playerTurn = (this.playerTurn - 1) % 2 + 1; // next_turn = (turn - bias) % no_players + bias
-    }
-
-    public static int[] decodeCoord(String encodedCoord) {
-        assert (encodedCoord.length() == 2);
-
-        // Converte as coordenadas convencionais em índices da matriz, na qual 'a8' se torna (0,0).
-        int[] coord = new int[2];
-        coord[0] = Math.abs(encodedCoord.charAt(1) - '8');  // Linha
-        coord[1] = encodedCoord.charAt(0) - 'a';            // Coluna
-        return coord;
-    }
-
-    public static String encodeCoord(int[] coord) {
-        return "" + Character.toString('a' + coord[1]) + ('8' - coord[0]);
-    }
-
     public void printBoard() {
         // Imprime o tabuleiro na tela com a formatação adequada.
         String[] linhas = this.toString().split("\\n");
@@ -159,5 +132,47 @@ public class Board {
             System.out.print(" " + Character.toString('a' + i));
         }
         System.out.println("\n");
+    }
+
+    public int getBoardSize() {
+        return boardSize;
+    }
+
+    /**
+     * Acessa a peça do tabuleiro na posição especificada.
+     * @param pos Vetor de (linha,coluna) da posição da peça.
+     * @return O objeto da peça, ou null se não houver peça ou as coordenadas forem invalidas.
+     */
+    public Piece getPiece(int[] pos) {
+        if (this.isOutOfBounds(pos))
+            return null;
+        else
+            return this.boardMatrix[pos[0]][pos[1]];
+    }
+
+    private void setPiece(int[] pos, Piece piece) {
+        this.boardMatrix[pos[0]][pos[1]] = piece;
+    }
+
+    private boolean isOutOfBounds(int[] pos) {
+        return (pos[0] < 0 || pos[0] >= this.boardSize || pos[1] < 0 || pos[1] >= this.boardSize);
+    }
+
+    private void changePlayerTurn() {
+        this.playerTurn = (this.playerTurn - 1) % 2 + 1; // next_turn = (turn - bias) % no_players + bias
+    }
+
+    public static int[] decodeCoord(String encodedCoord) {
+        assert (encodedCoord.length() == 2);
+
+        // Converte as coordenadas convencionais em índices da matriz, na qual 'a8' se torna (0,0).
+        int[] coord = new int[2];
+        coord[0] = Math.abs(encodedCoord.charAt(1) - '8');  // Linha
+        coord[1] = encodedCoord.charAt(0) - 'a';            // Coluna
+        return coord;
+    }
+
+    public static String encodeCoord(int[] coord) {
+        return "" + Character.toString('a' + coord[1]) + ('8' - coord[0]);
     }
 }
