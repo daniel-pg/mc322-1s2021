@@ -20,7 +20,6 @@ public class Pawn extends Piece {
         int[][] diffExpOneStep = {{direction, -1}, {direction, 1}};
         for (int[] diffExp : diffExpOneStep) {
             if (diff[0] == diffExp[0] && diff[1] == diffExp[1]) {
-                this.pos = dst;
                 return new int[][]{this.pos, dst};
             }
         }
@@ -32,7 +31,6 @@ public class Pawn extends Piece {
             if (diff[0] == diffExp[0] && diff[1] == diffExp[1]) {
                 Arrays.setAll(eatenPos, i -> this.pos[i] + diffExp[i] / 2);
                 if(this.board.getPiece(eatenPos) != null) {
-                    this.pos = dst;
                     return new int[][]{this.pos, eatenPos, dst};
                 }
             }
@@ -41,9 +39,9 @@ public class Pawn extends Piece {
         return null;
     }
 
-    public boolean isPromotable() {
-        boolean whitePromote = this.owner == 1 && this.pos[0] == 0;
-        boolean blackPromote = this.owner == 2 && this.pos[0] == this.board.getBoardSize() - 1;
+    public boolean isPromotable(int[] target) {
+        boolean whitePromote = this.owner == 1 && target[0] == 0;
+        boolean blackPromote = this.owner == 2 && target[0] == this.board.getBoardSize() - 1;
         return whitePromote || blackPromote;
     }
 }

@@ -11,7 +11,11 @@ public abstract class Piece {
         this.board = board;
     }
 
+    public void setPosition(int[] pos) {
+        this.pos = pos;
+    }
+
     public abstract int[][] validateMove(int[] dst);
 
-    public abstract boolean isPromotable();
+    public abstract boolean isPromotable(int[] target);
 }

@@ -1,11 +1,14 @@
 package mc322.lab05;
 
 public class Board {
-    private int playerTurn;
     private Piece[][] boardMatrix;
-    private final int boardSize;
-    private final int pawnRanks;
+    private final int boardSize;    // Altura/largura do tabuleiro quadrado.
+    private final int pawnRanks;    // Número de fileiras com peões para cada jogador, ao início do jogo.
+    private int playerTurn;         // Brancas: 1. Pretas: 2.
 
+    /**
+     * Construtor padrão, passa as dimensões padrão do tabuleiro caso nenhuma seja fornecida.
+     */
     Board() {
         this(8, 3);
     }
@@ -14,7 +17,7 @@ public class Board {
         this.boardSize = boardSize;
         this.pawnRanks = pawnRanks;
         boardMatrix = new Piece[this.boardSize][this.boardSize];
-        playerTurn = 1;     // Brancas: 1. Pretas: 2.
+        playerTurn = 1;
 
         int[] pos; // Vetor usado pra passar a coordenada da peça como parâmetro
 
@@ -78,7 +81,8 @@ public class Board {
         this.setPiece(path[path.length - 2], null);
 
         // Coloca a peça na posição destino, a promovendo se for o caso
-        this.setPiece(path[path.length - 1], piece.isPromotable() ? piece : new Queen(piece));
+        int[] dst = path[path.length - 1];
+        this.setPiece(dst, piece.isPromotable(dst) ? new Queen(piece) : piece);
     }
 
     /**
@@ -152,6 +156,10 @@ public class Board {
 
     private void setPiece(int[] pos, Piece piece) {
         this.boardMatrix[pos[0]][pos[1]] = piece;
+
+        if (piece != null) {
+            piece.setPosition(pos);
+        }
     }
 
     private boolean isOutOfBounds(int[] pos) {

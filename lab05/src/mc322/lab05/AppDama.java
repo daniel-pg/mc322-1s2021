@@ -17,8 +17,10 @@ public class AppDama {
         csv.setDataExport(outputFilePath);
         String[] commands = csv.requestCommands();
 
-        // Cria o histórico do Board neste jogo: vetor de Strings, cada uma serializando o Board.
+        // Tabuleiro do jogo, onde tudo acontece
         Board board = new Board();
+
+        // Cria o histórico do jogo, um vetor de Strings, cada uma contendo um estado do tabuleiro em certo lance.
         String[] boardHistory = new String[commands.length + 1];
         int boardHistoryIndex = 0;
         boardHistory[boardHistoryIndex++] = board.toString();
@@ -29,16 +31,18 @@ public class AppDama {
 
         // Executa os comandos até que não sobre nenhum.
         for (String command : commands) {
-            String[] moveSrcToDest = command.split(":");
-            System.out.println("Source: " + moveSrcToDest[0] + "\nTarget: " + moveSrcToDest[1]);
+            String[] srcDestPair = command.split(":");
+            System.out.println("Source: " + srcDestPair[0] + "\nTarget: " + srcDestPair[1]);
 
             // Converte o comando em índices de matriz e executa o comando.
-            int[] srcDecoded = Board.decodeCoord(moveSrcToDest[0]);
-            int[] dstDecoded = Board.decodeCoord(moveSrcToDest[1]);
+            int[] srcDecoded = Board.decodeCoord(srcDestPair[0]);
+            int[] dstDecoded = Board.decodeCoord(srcDestPair[1]);
             if (board.requestMove(srcDecoded, dstDecoded)) {
                 // Exibe o estado resultante do Board na tela e o armazena no histórico.
                 boardHistory[boardHistoryIndex++] = board.toString();
                 board.printBoard();
+            } else {
+                System.out.println("Movimento inválido!\n");
             }
         }
 

@@ -31,7 +31,6 @@ public class Queen extends Piece {
 
         // Avalia se o destino é adjacente à rainha. Se for, retorna o vetor trajetória
         if (this.pos[0] == row) {
-            this.pos = dst;
             return new int[][]{this.pos, dst};
         }
 
@@ -58,18 +57,17 @@ public class Queen extends Piece {
 
         // Produz o vetor com a trajetória da rainha
         // Relembre que rowStep e colStep vão do destino à posição da rainha
-        int length = this.pos[0] - dst[0] + 1;
+        int length = Math.abs(this.pos[0] - dst[0]) + 1;
         int[][] trajectory = new int[length][2];
         for (int i = 0; i < length; i++) {
             trajectory[i][0] = this.pos[0] - (i * rowStep);
             trajectory[i][1] = this.pos[1] - (i * colStep);
         }
 
-        this.pos = dst;
         return trajectory;
     }
 
-    public boolean isPromotable() {
+    public boolean isPromotable(int[] target) {
         return false;
     }
 }
