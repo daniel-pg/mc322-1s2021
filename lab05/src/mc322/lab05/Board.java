@@ -74,11 +74,10 @@ public class Board {
     private void executeMove(int[][] path) {
         Piece piece = this.getPiece(path[0]);
 
-        // Remove a peça da posição original
-        this.setPiece(path[0], null);
-
-        // Remove uma peça que porventura tenha sido comida
-        this.setPiece(path[path.length - 2], null);
+        // Remove a peça da posição original e quaisquer peças que porventura tenham sido comidas
+        for (int i = 0; i < path.length - 2; i++) {
+            this.setPiece(path[i], null);
+        }
 
         // Coloca a peça na posição destino, a promovendo se for o caso
         int[] dst = path[path.length - 1];
@@ -98,14 +97,9 @@ public class Board {
                 Piece piece = getPiece(new int[]{row, col});
 
                 if (piece == null) {
-                    // Espaço vazio
-                    serialization.append('-');
+                    serialization.append('-');  // Espaço vazio
                 } else {
-                    if (piece instanceof Pawn) {
-                        serialization.append((piece.owner == 1) ? 'b' : 'p');
-                    } else if (piece instanceof Queen) {
-                        serialization.append((piece.owner == 1) ? 'B' : 'P');
-                    }
+                    serialization.append(piece.toChar());
                 }
             }
 
@@ -136,6 +130,22 @@ public class Board {
             System.out.print(" " + Character.toString('a' + i));
         }
         System.out.println("\n");
+    }
+
+    public void exportToFile(CSVHandling csv) {
+        String[] outputLines = new String[boardSize * boardSize];
+        Piece peca;
+        char c;
+
+        for (int col = 0; col < boardSize; col++) {
+            for (int row = boardSize - 1; row >= 0; row--) {
+                int[] coord = new int[]{row, col};
+                peca = this.getPiece(coord);
+                c = (peca == null) ? '_': peca.toChar();
+                outputLines[col * boardSize + (boardSize - row - 1)] = encodeCoord(coord) + Character.toString(c);
+            }
+        }
+        csv.exportState(outputLines);
     }
 
     public int getBoardSize() {
@@ -181,6 +191,6 @@ public class Board {
     }
 
     public static String encodeCoord(int[] coord) {
-        return "" + Character.toString('a' + coord[1]) + ('8' - coord[0]);
+        return "" + Character.toString('a' + coord[1]) + Character.toString('8' - coord[0]);
     }
 }

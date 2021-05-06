@@ -11,6 +11,8 @@ public abstract class Piece {
         this.board = board;
     }
 
+    public abstract char toChar();
+
     public void setPosition(int[] pos) {
         this.pos = pos;
     }

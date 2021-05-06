@@ -11,6 +11,10 @@ public class Queen extends Piece {
         this(pawn.owner, pawn.pos, pawn.board);
     }
 
+    public char toChar() {
+        return (owner == 1) ? 'B' : 'P';
+    }
+
     public int[][] validateMove(int[] dst) {
         // Avalia se o local de destino está vago
         if (this.board.getPiece(dst) != null) {
@@ -22,37 +26,35 @@ public class Queen extends Piece {
             return null;
         }
 
-        // Variáveis para percorrer a diagonal-trajetória partindo do destino em direção à rainha
-        int rowStep = (pos[0] > dst[0]) ? 1 : -1;
-        int colStep = (pos[1] > dst[1]) ? 1 : -1;
-        int row = dst[0] + rowStep;
-        int col = dst[1] + colStep;
-        int[] position;
+        /*
+         * Realiza varredura ao longo da trajetória diagonal
+         * A varredura se dá em sentido contrário: parte-se do destino em direção à rainha
+         * Estas duas variáveis determinam a direção da varredura
+         */
+        int rowStep = (this.pos[0] > dst[0]) ? 1 : -1;
+        int colStep = (this.pos[1] > dst[1]) ? 1 : -1;
 
-        // Avalia se o destino é adjacente à rainha. Se for, retorna o vetor trajetória
-        if (this.pos[0] == row) {
-            return new int[][]{this.pos, dst};
-        }
+        // Armazena o local atual da varredura, começando adjacente ao destino
+        int[] position = new int[]{dst[0] + rowStep, dst[1] + colStep};
 
-        // As seções abaixo são executadas caso o destino esteja a duas ou mais casas da rainha
-        // Avalia se a penúltima casa da trajetória contém uma peça do jogador
-        position = new int[]{row, col};
-        Piece nextToLast = this.board.getPiece(position);
-        if (nextToLast != null && nextToLast.owner == this.owner) {
-            return null;
-        }
-
-        // Avalia se as outras casas da trajetória contém alguma peça
-        row += rowStep;
-        col += colStep;
-        while(row != this.pos[0]) {
-            position = new int[]{row, col};
-            if (this.board.getPiece(position) != null) {
-                return null;
+        Piece piece;
+        int sequence = 0;
+        while (position[0] != this.pos[0]) {
+            piece = this.board.getPiece(position);
+            if (piece == null) {
+                sequence = 0;
             } else {
-                row += rowStep;
-                col += colStep;
+                if (piece.owner == this.owner) {
+                    return null;
+                } else {
+                    sequence++;
+                }
             }
+            if (sequence == 2) {
+                return null;
+            }
+            position[0] += rowStep;
+            position[1] += colStep;
         }
 
         // Produz o vetor com a trajetória da rainha

@@ -7,6 +7,10 @@ public class Pawn extends Piece {
         super(owner, pos, board);
     }
 
+    public char toChar() {
+        return (owner == 1) ? 'b' : 'p';
+    }
+
     public int[][] validateMove(int[] dst) {
         // Avalia se já existe uma peça no local de destino
         if (this.board.getPiece(dst) != null) {
